@@ -1,0 +1,19 @@
+{
+    "produtos": [
+    {
+        "id": 1,
+        "name": "Caneta",
+        "price": 5.99
+    },
+    {
+        "id": 2,
+        "name": "Computador",
+        "price": 1000.99
+    }, 
+    {
+        "id": 3,
+        "name": "Cadeira",
+        "price": 300.99
+    }
+  ]
+}

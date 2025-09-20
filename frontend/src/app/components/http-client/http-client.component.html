@@ -1,0 +1,342 @@
+<div class="http-client">
+  <!-- Header -->
+  <div class="header">
+    <div class="breadcrumb">
+      <span>HTTP</span>
+      <span class="separator">/</span>
+      <span>My Collection</span>
+      <span class="separator">/</span>
+      <span>Get Data</span>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17,21 17,13 7,13 7,21"/>
+          <polyline points="7,3 7,8 15,8"/>
+        </svg>
+        Save
+      </button>
+      <button class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7,10 12,15 17,10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </button>
+      <button class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13"/>
+          <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+        </svg>
+        Share
+      </button>
+      <button class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Request Builder -->
+  <div class="request-builder">
+    <form [formGroup]="requestForm" (ngSubmit)="sendRequest()">
+      <!-- URL Bar -->
+      <div class="url-bar">
+        <select formControlName="method" class="method-select">
+          <option *ngFor="let method of httpMethods" [value]="method">
+            {{ method }}
+          </option>
+        </select>
+        
+        <input 
+          type="text" 
+          formControlName="url" 
+          placeholder="Enter request URL"
+          class="url-input"
+        />
+        
+        <button 
+          type="submit" 
+          class="send-button"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="!isLoading">Send</span>
+          <span *ngIf="isLoading">Loading...</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+            <path d="M2 17l10 5 10-5"/>
+            <path d="M2 12l10 5 10-5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button 
+          type="button"
+          class="tab"
+          [class.active]="activeTab === 'params'"
+          (click)="setActiveTab('params')"
+        >
+          PARAMS
+        </button>
+        <button 
+          type="button"
+          class="tab"
+          [class.active]="activeTab === 'authorization'"
+          (click)="setActiveTab('authorization')"
+        >
+          AUTHORIZATION
+        </button>
+        <button 
+          type="button"
+          class="tab"
+          [class.active]="activeTab === 'headers'"
+          (click)="setActiveTab('headers')"
+        >
+          HEADERS
+        </button>
+        <button 
+          type="button"
+          class="tab"
+          [class.active]="activeTab === 'body'"
+          (click)="setActiveTab('body')"
+        >
+          BODY
+        </button>
+        <button 
+          type="button"
+          class="tab"
+          [class.active]="activeTab === 'scripts'"
+          (click)="setActiveTab('scripts')"
+        >
+          SCRIPTS
+        </button>
+        
+        <div class="tab-actions">
+          <span class="cookies-link">Cookies</span>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Params Tab -->
+        <div *ngIf="activeTab === 'params'" class="params-content">
+          <div class="key-value-section">
+            <div 
+              *ngFor="let param of paramsArray.controls; let i = index" 
+              class="key-value-row"
+              [formGroup]="getParamFormGroup(i)"
+            >
+              <input 
+                type="text" 
+                placeholder="Key" 
+                formControlName="key"
+                class="key-input"
+              />
+              <input 
+                type="text" 
+                placeholder="Value" 
+                formControlName="value"
+                class="value-input"
+              />
+              <button 
+                type="button" 
+                class="remove-btn"
+                (click)="removeParam(i)"
+              >
+              </button>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="add-button"
+            (click)="addParam()"
+          >
+            Add Parameter
+          </button>
+        </div>
+
+        <!-- Authorization Tab -->
+        <div *ngIf="activeTab === 'authorization'" class="auth-content" formGroupName="authorization">
+          <div class="auth-type-selector">
+            <select formControlName="type">
+              <option value="bearer">Bearer Token</option>
+              <option value="basic">Basic Auth</option>
+              <option value="api-key">API Key</option>
+            </select>
+          </div>
+          
+          <div class="auth-fields">
+            <div *ngIf="requestForm.get('authorization.type')?.value === 'bearer'">
+              <input 
+                type="text" 
+                placeholder="Token"
+                formControlName="token"
+                class="auth-input"
+              />
+            </div>
+            
+            <div *ngIf="requestForm.get('authorization.type')?.value === 'basic'" class="basic-auth">
+              <input 
+                type="text" 
+                placeholder="Username"
+                formControlName="username"
+                class="auth-input"
+              />
+              <input 
+                type="password" 
+                placeholder="Password"
+                formControlName="password"
+                class="auth-input"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Headers Tab -->
+        <div *ngIf="activeTab === 'headers'" class="headers-content">
+          <div class="key-value-section">
+            <div 
+              *ngFor="let header of headersArray.controls; let i = index" 
+              class="key-value-row"
+              [formGroup]="getHeaderFormGroup(i)"
+            >
+              <input 
+                type="text" 
+                placeholder="Header" 
+                formControlName="key"
+                class="key-input"
+              />
+              <input 
+                type="text" 
+                placeholder="Value" 
+                formControlName="value"
+                class="value-input"
+              />
+              <button 
+                type="button" 
+                class="remove-btn"
+                (click)="removeHeader(i)"
+              >
+              </button>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            class="add-button"
+            (click)="addHeader()"
+          >
+            Add Header
+          </button>
+        </div>
+
+        <!-- Body Tab -->
+        <div *ngIf="activeTab === 'body'" class="body-content">
+          <textarea 
+            formControlName="body"
+            placeholder='{"key": "value"}'
+            class="body-textarea"
+            rows="10"
+          ></textarea>
+        </div>
+
+        <!-- Scripts Tab -->
+        <div *ngIf="activeTab === 'scripts'" class="scripts-content">
+          <div class="script-sections">
+            <div class="script-section">
+              <h4>Pre-request</h4>
+              <textarea 
+                placeholder="// Script to run before sending request"
+                rows="5"
+                class="script-textarea"
+              ></textarea>
+            </div>
+            
+            <div class="script-section">
+              <h4>Post-response</h4>
+              <textarea 
+                placeholder="// Script to run after receiving response"
+                rows="5"
+                class="script-textarea"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="panel-header">
+      <div class="panel-tabs">
+        <span class="panel-tab">📦 Packages</span>
+        <span class="panel-tab active">&lt;/&gt; Snippets</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Response Section -->
+  <div class="response-section">
+    <div class="response-tabs">
+      <button class="response-tab active">Response</button>
+      <button 
+        class="response-tab"
+        (click)="toggleHistory()"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12,6 12,12 16,14"/>
+        </svg>
+        History
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6,9 12,15 18,9"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Response Content -->
+    <div class="response-content" *ngIf="response && !showHistory">
+      <div class="response-status">
+        <span [class]="getStatusClass(response.status)">
+          {{ response.status }} {{ response.statusText }}
+        </span>
+        <span class="response-time">{{ response.responseTime }}ms</span>
+      </div>
+      
+      <div class="response-body">
+        <pre>{{ formatJson(response.body) }}</pre>
+      </div>
+    </div>
+
+    <!-- History Content -->
+    <div class="history-content" *ngIf="showHistory">
+      <div class="history-header">
+        <h3>Request History</h3>
+        <button class="btn-secondary" (click)="clearHistory()">Clear All</button>
+      </div>
+      
+      <div class="history-list">
+        <div 
+          *ngFor="let item of history" 
+          class="history-item"
+          (click)="loadFromHistory(item)"
+        >
+          <div class="history-method">{{ item.request.method }}</div>
+          <div class="history-url">{{ item.request.url }}</div>
+          <div class="history-status" [class]="getStatusClass(item.response?.status || 0)">
+            {{ item.response?.status || '-' }}
+          </div>
+          <div class="history-time">
+            {{ item.timestamp | date:'short' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
